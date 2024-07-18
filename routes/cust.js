@@ -111,7 +111,7 @@ router
                 console.log('Insert OK !');
                 res.redirect('/');
                 db_connect.close(conn);
-                //화면을 만들어서 내보내는게 아니라 기존에 서버에 있던걸 내보내는 느낌 ㅇㅇ
+                //화면을 만들어서 내보내는게 아니라 기존에 서버에 있던걸 내보내는 느낌 
             }
         });
     });
