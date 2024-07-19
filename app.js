@@ -18,6 +18,9 @@ LocalStrategy = require("passport-local").Strategy;
 var db_connect = require('./db/db_connect');
 var db_sql = require('./db/db_sql');
 
+// My util
+var goto = require('./util/goto');
+
 // CORS 지정
 const cors = require("cors");
 app.use(cors());
@@ -133,23 +136,13 @@ app.get('/loginerror', (req,res)=>{
 
 // Controller
 // 127.0.0.1/
+
 app.get('/', (req,res)=>{
-    let loginid, loginname;
-    if(req.user){
-        loginid = req.user.id;
-        loginname = req.user.name;
-    }
-    if(loginid != undefined){
-        // login ok
-        res.render('index',{'loginid':loginid});
-    }else{
-        // Not login
-        res.render('index');
-    }
+    goto.go(req, res, undefined);
 });
 // Login 화면
 app.get('/login', (req,res)=>{
-    res.render('index',{'center':'login'});
+    goto.go(req, res, {'center':'login'});
 });
 app.get('/logout', (req,res)=>{
     req.session.destroy();
@@ -157,7 +150,7 @@ app.get('/logout', (req,res)=>{
 })
 // Register 화면
 app.get('/register', (req,res)=>{
-    res.render('index',{'center':'register'});
+    goto.go(req, res, {'center':'register'});
 });
 app.post('/registerimpl', (req,res)=>{
     // 입력값 받기
@@ -178,7 +171,7 @@ app.post('/registerimpl', (req,res)=>{
                 throw e;
             }else{
                 console.log('Insert OK !');
-                res.render('index',{'center':'registerok','name':name});
+                goto.go(req,res,{'center':'registerok','name':name});
             }
         }catch(e){
             console.log(e);
@@ -189,25 +182,73 @@ app.post('/registerimpl', (req,res)=>{
 });
 // Map 화면
 app.get('/map', (req,res)=>{
-    res.render('index',{'center':'map'});
+    goto.go(req,res,{'center':'map'});
 });
 app.get('/map2', (req,res)=>{
-    res.render('index',{'center':'map2'});
+    goto.go(req,res,{'center':'map2'});
 });
 // Chart 화면
 app.get('/chart', (req,res)=>{
-    res.render('index',{'center':'chart'});
+    goto.go(req,res,{'center':'chart'});
 });
 app.get('/chart2', (req,res)=>{
-    res.render('index',{'center':'chart2'});
+    goto.go(req,res,{'center':'chart2'});
 });
 
 
 // Detail 화면
 app.get('/detail', (req,res)=>{
-    res.render('index',{'center':'detail'});
+    goto.go(req,res,{'center':'detail'});
 });
+// Myinfo 화면
+app.get('/myinfo', (req,res)=>{
+    let id = req.query.id;
+    conn = db_connect.getConnection();
+    conn.query(db_sql.cust_select_one, id, (err, result, fields) => {
+        try{
+            if(err){
+                console.log('Select Error');
+                throw err;
+            }else{
+                console.log(result);
+                custinfo = result[0];
+                console.log(custinfo);
+                goto.go(req,res,{'center':'myinfo', 'custinfo':custinfo});
+            }
+        }catch(e){
+            console.log(e);
+        }finally{
+            db_connect.close(conn);
+        }
+    });
+});
+app.post("/updateimpl",(req,res)=>{
+    let id = req.body.id;
+    let pwd = req.body.pwd;
+    let name = req.body.name;
+    let acc = req.body.acc;
+    console.log(id+' '+pwd+' '+name+' '+acc);
+    let values = [pwd,name,acc,id];
+    conn = db_connect.getConnection();
 
+    conn.query(db_sql.cust_update, values, (e, result, fields) => {
+        try{
+            if(e){
+                console.log('Update Error');
+                console.log(e);
+                throw e;
+            }else{
+                console.log('Update OK !');
+                res.redirect('/myinfo?id='+id);
+            }
+        }catch(e){
+            console.log(e);
+        }finally{
+            db_connect.close(conn);
+        }
+       
+    });
+});
 // Router 
 const cust = require('./routes/cust');
 const item = require('./routes/item');
