@@ -33,36 +33,24 @@
   <h1>My First Page</h1>
 </div>
 {% if loginid %}
-<ul class="nav justify-content-end">
-  <li class="nav-item">
-    <a class="nav-link" href="#">{{loginid}}</a>
-  </li>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="/logout">LogOut</a>
-  </li>
-</ul>
+    <ul class="nav justify-content-end">
+      <li class="nav-item">
+        <a class="nav-link" href="#">{{loginid}}</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/logout">LogOut</a>
+      </li>
+    </ul>
 {% else %}
-<ul class="nav justify-content-end">
-  <li class="nav-item">
-    <a class="nav-link" href="/login">Login</a>
-  </li>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="/register">Register</a>
-  </li>
-</ul>
-
+    <ul class="nav justify-content-end">
+      <li class="nav-item">
+        <a class="nav-link" href="/login">Login</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/register">Register</a>
+      </li>
+    </ul>
 {% endif %}
-<ul class="nav justify-content-end">
-    <li class="nav-item">
-      <a class="nav-link" href="/login">Login</a>
-    </li>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" href="/register">Register</a>
-    </li>
-</ul>
 
 <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
   <a class="navbar-brand" href="/">HOME</a>

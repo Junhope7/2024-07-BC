@@ -1,9 +1,10 @@
-// Package 관한 선언
+// Package 
 require('dotenv').config();
 const express=require('express');
 const session = require('express-session');
+
 const nunjucks = require('nunjucks');
-const bodyParser = require('body-parser')   //body parser 추가 1
+const bodyParser = require('body-parser')   
 const app = express();
 const port = process.env.SERVER_PORT || 3000;
 
@@ -12,6 +13,24 @@ const MemoryStore = require("memorystore")(session);
 // Passport lib 
 const passport = require("passport"),
 LocalStrategy = require("passport-local").Strategy;
+
+// Database 연동
+var db_connect = require('./db/db_connect');
+var db_sql = require('./db/db_sql');
+
+// CORS 지정
+const cors = require("cors");
+app.use(cors());
+// HTML 파일 위치 views
+nunjucks.configure('views',{
+    express:app,
+});
+
+// html 환경 설정, post, public
+app.set('view engine', 'html');
+app.use(bodyParser.urlencoded({extended:false})); //객체 들어감. 추가 2 
+app.use(express.static('public'));
+
 
 // Session 선언
 app.use(
@@ -26,20 +45,6 @@ app.use(
     })
 );
 
-
-// Database 연동
-var db_connect = require('./db/db_connect');
-var db_sql = require('./db/db_sql');
-
-// HTML 파일 위치 views
-nunjucks.configure('views',{
-    express:app,
-});
-
-//HTML 환경설정 , post , public
-app.set('view engine', 'html');
-app.use(bodyParser.urlencoded({extended:false})); //객체 들어감. 추가 2 
-app.use(express.static('public'));
 
 // 2. Passport를 이용한 로그인 처리 ---------------------------------------------------------------------------------------
 
@@ -61,7 +66,7 @@ passport.serializeUser(function (req, user, done) {
 // 사용자가 페이지를 방문할 때마다 호출되는 함수
 // done(null, id)로 사용자의 정보를 각 request의 user 변수에 넣어준다.
 passport.deserializeUser(function (req, user, done) {
-    console.log('LoginUser'+user.name+' '+user.id);
+    console.log('Login User'+user.name+' '+user.id);
     done(null, user);
 });
 
@@ -117,51 +122,51 @@ app.post(
 );
 
 // 2. Passport를 이용한 로그인 처리 끝---------------------------------------------------------------------------------------
-
 app.get('/loginerror', (req,res)=>{
     res.render('index',{
         center:'loginerror'
     })
 })
+
+
+
+
 // Controller
-// 127.0.0.1:3000/
+// 127.0.0.1/
 app.get('/', (req,res)=>{
     let loginid, loginname;
-    if (req.user){
-        loginid  = req.user.id;
-        loginname  = req.user.name;
-    } 
-    res.render('index');
-    if (loginid !== undefined) {
-        //login ok
-        res.render('index', { loginid:loginid,  loginname:loginname });
+    if(req.user){
+        loginid = req.user.id;
+        loginname = req.user.name;
+    }
+    if(loginid != undefined){
+        // login ok
+        res.render('index',{'loginid':loginid});
     }else{
-        //not login
+        // Not login
         res.render('index');
     }
-
 });
-//Login 화면
+// Login 화면
 app.get('/login', (req,res)=>{
     res.render('index',{'center':'login'});
 });
-//Logout 화면
 app.get('/logout', (req,res)=>{
     req.session.destroy();
     res.redirect('/');
 })
-// Register 화면 
+// Register 화면
 app.get('/register', (req,res)=>{
     res.render('index',{'center':'register'});
 });
-
-// Register 등록기능
-app.post("/registerimpl",(req,res)=>{
+app.post('/registerimpl', (req,res)=>{
+    // 입력값 받기
     let id = req.body.id;
     let pwd = req.body.pwd;
     let name = req.body.name;
     let acc = req.body.acc;
     console.log(id+' '+pwd+' '+name+' '+acc);
+    // DB에 입력 하고 center에 회원가입을 축하합니다. 출력
     let values = [id,pwd,name,acc];
     conn = db_connect.getConnection();
 
@@ -180,29 +185,22 @@ app.post("/registerimpl",(req,res)=>{
         }finally{
             db_connect.close(conn);
         }
-       
     });
 });
-
-// Map 화면 
+// Map 화면
 app.get('/map', (req,res)=>{
     res.render('index',{'center':'map'});
 });
-// Map2
 app.get('/map2', (req,res)=>{
     res.render('index',{'center':'map2'});
 });
-
-// Chart 화면 
+// Chart 화면
 app.get('/chart', (req,res)=>{
     res.render('index',{'center':'chart'});
 });
-
-// Chart2 화면 
 app.get('/chart2', (req,res)=>{
     res.render('index',{'center':'chart2'});
 });
-
 
 
 // Detail 화면
@@ -210,11 +208,10 @@ app.get('/detail', (req,res)=>{
     res.render('index',{'center':'detail'});
 });
 
-// Router
+// Router 
 const cust = require('./routes/cust');
-app.use('/cust', cust);
-
 const item = require('./routes/item');
+app.use('/cust', cust);
 app.use('/item', item);
 
 app.listen(port,()=>{
