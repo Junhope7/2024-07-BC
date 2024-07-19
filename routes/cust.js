@@ -7,112 +7,111 @@ const bodyParser = require('body-parser');
 // Database 연동
 var db_connect = require('../db/db_connect');
 var db_sql = require('../db/db_sql');
-conn = db_connect.getConnection();
+// /cust
 router
     .get("/",(req,res)=>{   // 127.0.0.1/cust/
         conn = db_connect.getConnection();
-            
         conn.query(db_sql.cust_select, function (err, result, fields) {
-
+            console.log(result);
             res.render('index', { center:'cust/list', datas:result });
             db_connect.close(conn);
-        
-        })
+        });
     })
-
     .get("/add",(req,res)=>{   // 127.0.0.1/cust/add
         res.render('index',{'center':'cust/add'});
     })
-
-    .get("/deleteimpl",(req,res)=>{
+    .get("/deleteimpl",(req,res)=>{   // 127.0.0.1/cust/deleteimpl
         let id = req.query.id;
         conn = db_connect.getConnection();
 
-        conn.query(db_sql.cust_delete, id , function (err, result, fields) {
-
-        if(err){
-            console.log('Delete Error');
-            console.log('Error Message:')+err;
-            db_connect.close(conn);
-        }else{
-            console.log('Delete OK !');
-            conn.query(db_sql.cust_select, function (err, result, fields) {
-
-                res.render('index', { center:'cust/list', datas:result });
+        conn.query(db_sql.cust_delete, id, (err, result, fields) => {
+            try{
+                if(err){
+                    console.log('Delete Error');
+                    throw err;
+                }else{
+                    res.redirect('/cust');
+                }
+            }catch(e){
+                console.log(e);
+            }finally{
                 db_connect.close(conn);
-            
-            })
-        }
-        })        
+            } 
+        });  
     })
-
-    .get("/detail",(req,res)=>{   // 127.0.0.1/cust/add
+    .get("/detail",(req,res)=>{   // 127.0.0.1/cust/detail
         let id = req.query.id;
         conn = db_connect.getConnection();
-
-        conn.query(db_sql.cust_select_one, id, function (err, result, fields) {
-
-            if(err){
-                console.log('Select Error');
-                console.log('Error Message:')+err;
-                db_connect.close(conn);
-            }else{
-                console.log(result);
-                custinfo = result[0];
-                console.log(custinfo);
-
-                
-                res.render('index',{'center':'cust/detail','custinfo':custinfo});
+        conn.query(db_sql.cust_select_one, id, (err, result, fields) => {
+            try{
+                if(err){
+                    console.log('Select Error');
+                    throw err;
+                }else{
+                    console.log(result);
+                    custinfo = result[0];
+                    console.log(custinfo);
+                    res.render('index',{'center':'cust/detail', 'custinfo':custinfo});
+                }
+            }catch(e){
+                console.log(e);
+            }finally{
                 db_connect.close(conn);
             }
-
         });
     })
     .post("/updateimpl",(req,res)=>{
+        let id = req.body.id;
         let pwd = req.body.pwd;
         let name = req.body.name;
         let acc = req.body.acc;
-        let values = [pwd,name,acc];
-        console.log(pwd+' '+name+' '+acc);
+        console.log(id+' '+pwd+' '+name+' '+acc);
+        let values = [pwd,name,acc,id];
+        conn = db_connect.getConnection();
 
-        conn.query(db_sql.cust_insert,values, (err, result, fields) => {
-            if(err){
-                console.log('Insert Error');
-                console.log('Error Message:')+err;
+        conn.query(db_sql.cust_update, values, (e, result, fields) => {
+            try{
+                if(e){
+                    console.log('Insert Error');
+                    console.log(e);
+                    throw e;
+                }else{
+                    console.log('Update OK !');
+                    res.redirect('/cust/detail?id='+id);
+                }
+            }catch(e){
+                console.log(e);
+            }finally{
                 db_connect.close(conn);
-            }else{
-                console.log('Insert OK !');
-                conn.query(db_sql.cust_select, function (err, result, fields) {
-
-                    res.render('index', { center:'cust/list', datas:result });
-                    db_connect.close(conn);
-                
-                })
-                //화면을 만들어서 내보내는게 아니라 기존에 서버에 있던걸 내보내는 느낌 ㅇㅇ
             }
+           
         });
-
     })
-
     .post("/addimpl",(req,res)=>{
         let id = req.body.id;
         let pwd = req.body.pwd;
         let name = req.body.name;
         let acc = req.body.acc;
-        let values = [id,pwd,name,acc];
         console.log(id+' '+pwd+' '+name+' '+acc);
+        let values = [id,pwd,name,acc];
+        conn = db_connect.getConnection();
 
-        conn.query(db_sql.cust_insert,values, (err, result, fields) => {
-            if(err){
-                console.log('Insert Error');
-                console.log('Error Message:')+err;
+        conn.query(db_sql.cust_insert, values, (e, result, fields) => {
+            try{
+                if(e){
+                    console.log('Insert Error');
+                    console.log(e);
+                    throw e;
+                }else{
+                    console.log('Insert OK !');
+                    res.redirect('/cust');
+                }
+            }catch(e){
+                console.log(e);
+            }finally{
                 db_connect.close(conn);
-            }else{
-                console.log('Insert OK !');
-                res.redirect('/');
-                db_connect.close(conn);
-                //화면을 만들어서 내보내는게 아니라 기존에 서버에 있던걸 내보내는 느낌 
             }
+           
         });
     });
 
