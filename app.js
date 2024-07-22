@@ -252,8 +252,10 @@ app.post("/updateimpl",(req,res)=>{
 // Router 
 const cust = require('./routes/cust');
 const item = require('./routes/item');
+const block = require('./routes/block');
 app.use('/cust', cust);
 app.use('/item', item);
+app.use('/block', block);
 
 app.listen(port,()=>{
     console.log(`server start port:${port}`)
