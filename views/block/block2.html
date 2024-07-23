@@ -1,7 +1,92 @@
+<script>
+  let web3;
+  let accounts;
+
+  function connect(){
+      web3 = new Web3(
+              new Web3.providers.HttpProvider("http://210.119.34.70:7545")
+          );
+
+      if (web3.isConnected()) {
+          console.log("connected");
+      } else {
+          console.log("not connected");
+      }
+
+  };
+  function getacc(loc){
+    let acc_info = accounts[loc];
+    $('#target_acc').val(acc_info);
+  };
+  function get(){
+      accounts = web3.eth.accounts;
+      console.log(accounts);
+      let result = '';
+      for(var i in accounts){
+        if(accounts[i] == `{{custinfo.acc}}`){
+            continue;
+        }
+        let balance = web3
+                      .fromWei(web3.eth.getBalance(accounts[i]))
+                      .toNumber() + "ETH";
+        result += '<tr>';
+        result += '<td onclick="getacc('+i+');">'+accounts[i]+'</td>';
+        result += '<td>'+balance+'</td>';
+        result += '</tr>';
+      }
+      $('#acc_info').html(result);
+  };
+  function myacc(){
+    let balance = web3
+                      .fromWei(web3.eth.getBalance(`{{custinfo.acc}}`))
+                      .toNumber() + "ETH";
+    $('#myamount').text(balance);
+  };
+  $(document).ready(function(){
+    connect();
+    get();
+    myacc();
+    $('#send_btn').click(function(){
+      let myacc = `{{custinfo.acc}}`;
+      let targetacc = $('#target_acc').val();
+      let amount = $('#amount').val();
+      let txhash = web3.eth.sendTransaction({
+                    from: myacc,
+                    to: targetacc,
+                    value: web3.toWei(amount, "ether"),
+                });
+      if(txhash != undefined){
+        location.reload();
+      }
+    });
+  });
+</script>
+
 <div class="container" style="margin-top:30px">
     <div class="row">
       <div class="col-sm-12">
         <h2>Block2 Page</h2>
+        <h5>{{custinfo.acc}}</h5>
+        <h5 id="myamount"></h5>
+        <input type="text" style="width:400px;" id="target_acc" 
+                           placeholder="Input Target Account"><br>
+        Amount:<input type="number" id="amount"><br>
+        <a href="#" id="send_btn" class="btn btn-info" role="button">Send</a>
+        <br>
+        <table class="table">
+          <thead class="thead-dark">
+            <tr>
+              <th>Account</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody id="acc_info">
+              <!-- <tr>
+                <td>12121212121</td>
+                <td>100 ETH</td>
+              </tr> -->
+          </tbody>
+        </table>
       </div>
     </div>
 </div>
