@@ -14,10 +14,10 @@ var goto = require('../util/goto');
 
 // /block
 router
-    .get("/block1",(req,res)=>{   // 127.0.0.1/cust/add
+    .get("/block1",(req,res)=>{  
         goto.go(req,res,{'center':'block/block1'});
     })
-    .get("/block2",(req,res)=>{   // 127.0.0.1/cust/add
+    .get("/block2",(req,res)=>{   
         let id = req.query.id;
         conn = db_connect.getConnection();
         conn.query(db_sql.cust_select_one, id, (err, result, fields) => {
@@ -37,6 +37,27 @@ router
                 db_connect.close(conn);
             }
         });
-
     })
+    .get("/block3",(req,res)=>{   
+        let id = req.query.id;
+        conn = db_connect.getConnection();
+        conn.query(db_sql.cust_select_one, id, (err, result, fields) => {
+            try{
+                if(err){
+                    console.log('Select Error');
+                    throw err;
+                }else{
+                    custinfo = result[0];
+                    conn.query(db_sql.cust_select, (err, result2, fields) => {
+                        goto.go(req,res,{'center':'block/block3','custinfo':custinfo,'custs':result2});
+                    });
+                }
+            }catch(e){
+                console.log(e);
+            }finally{
+                db_connect.close(conn);
+            }
+        });
+    });
+
 module.exports = router;
